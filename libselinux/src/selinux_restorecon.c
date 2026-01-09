@@ -768,10 +768,15 @@ out1:
 	freecon(newcon);
 	return rc;
 err:
-	selinux_log(SELINUX_ERROR,
-		    "Could not set context for %s:  %m\n",
-		    pathname);
-	rc = -1;
+	if (flags->ignore_noent && errno == ENOENT) {
+    // Sometimes files gets deleted while the relabeling happens
+		goto out;
+	} else {
+		selinux_log(SELINUX_ERROR,
+					"Could not set context for %s:  %m\n",
+					pathname);
+		rc = -1;
+	}
 	goto out1;
 }
 
